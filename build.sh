@@ -62,14 +62,14 @@ lb config \
 	--bootstrap-qemu-static /usr/bin/qemu-aarch64-static \
 	--archive-areas "main restricted universe multiverse" \
 	--parent-archive-areas "main restricted universe multiverse" \
-    --mirror-bootstrap "http://ports.ubuntu.com" \
-    --parent-mirror-bootstrap "http://ports.ubuntu.com" \
-    --mirror-chroot-security "http://ports.ubuntu.com" \
-    --parent-mirror-chroot-security "http://ports.ubuntu.com" \
-    --mirror-binary-security "http://ports.ubuntu.com" \
-    --parent-mirror-binary-security "http://ports.ubuntu.com" \
-    --mirror-binary "http://ports.ubuntu.com" \
-    --parent-mirror-binary "http://ports.ubuntu.com" \
+    --mirror-bootstrap "http://deb.debian.org" \
+    --parent-mirror-bootstrap "http://deb.debian.org" \
+    --mirror-chroot-security "http://deb.debian.org" \
+    --parent-mirror-chroot-security "http://deb.debian.org" \
+    --mirror-binary-security "http://deb.debian.org" \
+    --parent-mirror-binary-security "http://deb.debian.org" \
+    --mirror-binary "http://deb.debian.org" \
+    --parent-mirror-binary "http://deb.debian.org" \
     --keyring-packages ubuntu-keyring \
     --linux-flavours rockchip
 
@@ -95,7 +95,7 @@ sed -i 's/libgl1-amber-dri//g' config/package-lists/livecd-rootfs.list.chroot_in
 ) > config/package-lists/my.list.chroot
 
 if [ "${PROJECT}" == "ubuntu" ]; then
-    # Specific packages to install for ubuntu desktop
+    # Specific packages to install for debian desktop
     (
         echo "ubuntu-desktop-rockchip"
         echo "oem-config-gtk"
@@ -107,12 +107,12 @@ if [ "${PROJECT}" == "ubuntu" ]; then
         echo "localechooser-data"
     ) >> config/package-lists/my.list.chroot
 else
-    # Specific packages to install for ubuntu server
-    echo "ubuntu-server-rockchip" >> config/package-lists/my.list.chroot
+    # Specific packages to install for debian server
+    echo "debian-server-rockchip" >> config/package-lists/my.list.chroot
 fi
 
 # Build the rootfs
 lb build 
 
 # Tar the entire rootfs
-(cd chroot/ &&  tar -p -c --sort=name --xattrs ./*) | xz -3 -T0 > "ubuntu-${version}-preinstalled-${name}-arm64.rootfs.tar.xz"
+(cd chroot/ &&  tar -p -c --sort=name --xattrs ./*) | xz -3 -T0 > "debian-${version}-preinstalled-${name}-arm64.rootfs.tar.xz"

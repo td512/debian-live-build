@@ -10,10 +10,6 @@ pro config set apt_news=false
 # Disable apport bug reporting
 sed -i 's/enabled=1/enabled=0/g' /etc/default/apport
 
-# Remove release upgrade motd
-rm -f /var/lib/ubuntu-release-upgrader/release-upgrade-available
-sed -i 's/Prompt=.*/Prompt=never/g' /etc/update-manager/release-upgrades
-
 # Let systemd create machine id on first boot
 rm -f /var/lib/dbus/machine-id
 true > /etc/machine-id 
@@ -23,11 +19,6 @@ rm -rf /boot/grub
 
 # Disable apparmor
 systemctl mask apparmor
-
-# Disable motd news
-if [ -f /etc/default/motd-news ]; then
-    sed -i 's/ENABLED=1/ENABLED=0/g' /etc/default/motd-news
-fi
 
 # Add new users to the video group
 sed -i 's/#EXTRA_GROUPS=.*/EXTRA_GROUPS="video"/g' /etc/adduser.conf
@@ -69,16 +60,6 @@ if [ "$SUBPROJECT" == "desktop-preinstalled" ]; then
 
     # Adjust kernel command line arguments for desktop
     echo -n "quiet splash plymouth.ignore-serial-consoles" >> /etc/kernel/cmdline
-fi
-
-# Mouse lag/stutter (missed frames) in Wayland sessions
-# https://bugs.launchpad.net/ubuntu/+source/mutter/+bug/1982560
-if [ "$SUITE" == "jammy" ]; then
-    (
-        echo "MUTTER_DEBUG_ENABLE_ATOMIC_KMS=0"
-        echo "MUTTER_DEBUG_FORCE_KMS_MODE=simple"
-        echo "CLUTTER_PAINT=disable-dynamic-max-render-time"
-    ) >> /etc/environment
 fi
 
 # Remove misc packages

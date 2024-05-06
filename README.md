@@ -1,1 +1,1 @@
-# ubuntu-live-build
+# debian-live-build
