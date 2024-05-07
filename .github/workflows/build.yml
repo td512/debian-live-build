@@ -114,11 +114,11 @@ jobs:
 
       - name: install desktop environment
         run: sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop plymouth
-        if: ${{ matrix.project == "preinstalled-desktop" }}
+        if: matrix.project == "preinstalled-desktop"
 
       - name: switch to graphical boot
         run: sudo chroot debian systemctl set-default graphical.target
-        if: ${{ matrix.project == "preinstalled-desktop" }}  
+        if:  matrix.project == "preinstalled-desktop"   
          
       - name: unmount system directories
         run: |
