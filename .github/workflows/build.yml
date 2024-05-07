@@ -64,7 +64,7 @@ jobs:
 
       - name: create stage 3 script
         run: |
-          sudo cat <<EOF > debian/stage3.sh
+          sudo cat <<EOF > stage3.sh
           #!/bin/bash
           cat <<EOT > /etc/apt/sources.list
           deb http://deb.debian.org/debian/ bullseye main contrib non-free
@@ -95,6 +95,7 @@ jobs:
           iface eth0 inet dhcp
           EOT
           EOF
+          sudo mv stage3.sh debian/
           sudo chmod 755 debian/stage3.sh
           
       - name: run stage 3 script
