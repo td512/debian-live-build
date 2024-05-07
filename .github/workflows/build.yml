@@ -126,7 +126,7 @@ jobs:
         run: sudo chroot debian ./stage3.sh
 
       - name: remove stage 3 script
-        run: rm debian/stage3.sh
+        run: sudo rm debian/stage3.sh
 
       - name: install desktop environment
         run: sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop plymouth
