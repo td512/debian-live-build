@@ -36,21 +36,35 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install qemu-user-static debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
+          wget http://ftp.us.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.134_all.deb
           sudo docker run --privileged --rm tonistiigi/binfmt --install all
 
-      - name: Build
+      - name: create installation directory
+        run: sudo mkdir debian
+
+      - name: debootstrap stage 1
         shell: bash
         run: |
-          sudo mkdir debian
           sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
-          echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
+      - name: create resolv.conf
+        run: echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
+
+      - name: mount system directories
+        run: |
           sudo mount --make-rslave --rbind /proc debian/proc
           sudo mount --make-rslave --rbind /sys debian/sys
           sudo mount --make-rslave --rbind /dev debian/dev
           sudo mount --make-rslave --rbind /run debian/run
-          sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
-          sudo chroot debian /debootstrap/debootstrap --second-stage
-          sudo cat <<EOF > debian/stage2.sh
+
+      - name: copy qemu
+        run: sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
+
+      - name: debootstrap stage 2
+        run: sudo chroot debian /debootstrap/debootstrap --second-stage
+
+      - name: create stage 3 script
+        run: |
+          sudo cat <<EOF > debian/stage3.sh
           #!/bin/bash
           cat <<EOT > /etc/apt/sources.list
           deb http://deb.debian.org/debian/ bullseye main contrib non-free
@@ -81,17 +95,32 @@ jobs:
           iface eth0 inet dhcp
           EOT
           EOF
-          sudo chmod 755 debian/stage2.sh
-          sudo chroot debian ./stage2.sh
-          rm debian/stage2.sh
+          sudo chmod 755 debian/stage3.sh
+          
+      - name: run stage 3 script
+        run: sudo chroot debian ./stage3.sh
+
+      - name: remove stage 3 script
+        run: rm debian/stage3.sh
+
+      - name: unmount system directories
+        run: |
           sudo umount debian/proc
           sudo umount debian/sys
           sudo umount debian/dev
           sudo umount debian/run
-          cd debian && sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
+
+      - name: tarball installation directory
+        run: |
+          cd debian
+          sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
           cd ..
+
+      - name: compress installation tarball
+        run: |
           sudo xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar
           sudo chmod 777 *.xz
+          
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
         with:
