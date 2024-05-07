@@ -40,8 +40,6 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          sudo mkdir /build && sudo chmod 777 /build && cd /build
-          sudo mkdir debian
           sudo debootstrap ${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
           echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
           sudo cat <<EOF > debian/stage2.sh
