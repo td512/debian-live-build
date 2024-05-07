@@ -129,7 +129,9 @@ jobs:
         run: sudo rm debian/stage3.sh
 
       - name: install desktop environment
-        run: sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop plymouth
+        run: |
+          sudo apt-get install -y plymouth
+          sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop
         if: matrix.project == 'preinstalled-desktop'
 
       - name: switch to graphical boot
