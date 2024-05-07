@@ -164,7 +164,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
         with:
-          name: env.filename
+          name: '${{ env.filename }}'
           path: ./${{ env.filename }}.tar.xz
           if-no-files-found: error
           overwrite: true
