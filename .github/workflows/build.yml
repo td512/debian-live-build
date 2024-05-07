@@ -135,7 +135,7 @@ jobs:
 
       - name: install desktop environment
         run: |
-          sudo apt-get install -y plymouth
+          sudo chroot debian apt-get install -y plymouth
           sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop
         if: matrix.project == 'preinstalled-desktop'
 
