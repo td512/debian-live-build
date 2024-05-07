@@ -18,6 +18,15 @@ jobs:
         suite:
           - bookworm
           - trixie
+        desktop:
+          - gnome
+          - gnome-flashback
+          - kde
+          - xfce
+          - lxde
+          - mate
+          - cinnamon
+          - lxqt
     steps:
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
@@ -36,7 +45,6 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install qemu-user-static debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
-          wget http://ftp.us.debian.org/debian/pool/main/d/debootstrap/debootstrap_1.0.134_all.deb
           sudo docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: create installation directory
@@ -104,6 +112,14 @@ jobs:
       - name: remove stage 3 script
         run: rm debian/stage3.sh
 
+      - name: install desktop environment
+        run: sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop plymouth
+        if: ${{ matrix.project == "preinstalled-desktop" }}
+
+      - name: switch to graphical boot
+        run: sudo chroot debian systemctl set-default graphical.target
+        if: ${{ matrix.project == "preinstalled-desktop" }}  
+         
       - name: unmount system directories
         run: |
           sudo umount debian/proc
