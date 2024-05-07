@@ -45,7 +45,7 @@ jobs:
       - name: debootstrap stage 1
         shell: bash
         run: |
-          sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
+          sudo debootstrap --arch=arm64 --foreign ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}  debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
       - name: create resolv.conf
         run: echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
 
