@@ -22,18 +22,18 @@ while [ "$#" -gt 0 ]; do
             ;;
         -d|--desktop)
             export SUBPROJECT=desktop-preinstalled
-            export PROJECT=ubuntu
+            export PROJECT=debian
             name="desktop"
             shift
             ;;
         -b|--bookworm)
             export SUITE=bookworm
-            version="22.04"
+            version="12"
             shift
             ;;
         -t|--trixie)
             export SUITE=trixie
-            version="24.04"
+            version="13"
             shift
             ;;
         -v|--verbose)
