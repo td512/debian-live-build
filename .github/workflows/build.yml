@@ -1,6 +1,7 @@
 name: Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
@@ -27,7 +28,12 @@ jobs:
           - mate
           - cinnamon
           - lxqt
+          - none
     steps:
+      - name: early exit (matrix)
+        run: exit 1
+        if: matrix.project != 'preinstalled-server' && matrix.desktop != 'none'
+        
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -130,12 +136,12 @@ jobs:
       - name: tarball installation directory
         run: |
           cd debian
-          sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
+          sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}${{ matrix.desktop != 'none' && '-'+matrix.desktop }}-arm64-rootfs.tar .
           cd ..
 
       - name: compress installation tarball
         run: |
-          sudo xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar
+          sudo xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}${{ matrix.desktop != 'none' && '-'+matrix.desktop }}-arm64-rootfs.tar
           sudo chmod 777 *.xz
           
       - name: Upload
