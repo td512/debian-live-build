@@ -162,8 +162,9 @@ jobs:
           sudo chmod 777 *.xz
           
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.1
         with:
           name: env.filename
           path: ./${{ env.filename }}.tar.xz
           if-no-files-found: error
+          overwrite: true
