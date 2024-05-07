@@ -63,92 +63,46 @@ jobs:
 
       - name: Install dependencies
         shell: bash
-        run: |
-          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install qemu-user-static debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
-          sudo docker run --privileged --rm tonistiigi/binfmt --install all
+        run: scripts/install-dependencies.sh
 
-      - name: create installation directory
-        run: sudo mkdir debian
-
-      - name: debootstrap stage 1
+      - name: debootstrap
         shell: bash
-        run: |
-          sudo debootstrap --arch=arm64 --foreign ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
-      - name: create resolv.conf
-        run: echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
+        run: scripts/debootstrap.sh $(pwd) ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
 
-      - name: mount system directories
-        run: |
-          sudo mount --make-rslave --rbind /proc debian/proc
-          sudo mount --make-rslave --rbind /sys debian/sys
-          sudo mount --make-rslave --rbind /dev debian/dev
-          sudo mount --make-rslave --rbind /run debian/run
-
-      - name: copy qemu
-        run: sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
+      - name: setup chroot
+        run: scripts/setup-chroot.sh $(pwd)
 
       - name: debootstrap stage 2
-        run: sudo chroot debian /debootstrap/debootstrap --second-stage
+        run: scripts/complete-debootstrap.sh $(pwd)
 
-      - name: create stage 3 script
+      - name: tweak os
         run: |
-          sudo cat <<EOF > stage3.sh
-          #!/bin/bash
-          cat <<EOT > /etc/apt/sources.list
-          deb http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} main contrib non-free
-          deb-src http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} main contrib non-free
-          deb http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-updates main contrib non-free
-          deb-src http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-updates main contrib non-free
-          deb http://security.debian.org/debian-security ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-security main contrib non-free
-          deb-src http://security.debian.org/debian-security ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-security main contrib non-free
-          deb http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-backports main contrib non-free
-          deb-src http://deb.debian.org/debian/ ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}-backports main contrib non-free
-          EOT
-          apt-get update
-          apt-get install locales dialog tzdata -y
-          echo "Etc/GMT" > /etc/timezone
-          sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
-          echo 'LANG="en_US.UTF-8"'>/etc/default/locale
-          dpkg-reconfigure --frontend=noninteractive locales && \
-          update-locale LANG=en_US.UTF-8
-          env LANG en_US.UTF-8
-          env LANGUAGE en_US.UTF-8
-          env LC_ALL en_US.UTF-8
-          useradd -m -s /bin/bash debian
-          usermod -aG sudo debian
-          echo 'debian:debian'|chpasswd
-          apt-get install vim openssh-server ntpdate sudo ifupdown net-tools udev iputils-ping wget dosfstools unzip binutils libatomic1 -y
-          systemctl enable ssh
-          cat <<EOT > /etc/network/interfaces
-          allow-hotplug eth0
-          iface eth0 inet dhcp
-          EOT
-          EOF
-          sudo mv stage3.sh debian/
-          sudo chmod 755 debian/stage3.sh
-          
-      - name: run stage 3 script
-        run: sudo chroot debian ./stage3.sh
+          sudo cp scripts/os-tweaks.sh debian
+          sudo chroot debian ./os-tweaks.sh ${{ matrix.project }}
+          sudo rm debian/os-tweaks.sh
 
-      - name: remove stage 3 script
-        run: sudo rm debian/stage3.sh
+      - name: post debootstrap setup
+        run: |
+          sudo cp scripts/post-debootstrap.sh debian
+          sudo chroot debian ./post-debootstrap.sh ${{ matrix.suite }}
+          sudo rm debian/ipost-debootstrap.sh
 
       - name: install desktop environment
         run: |
-          sudo chroot debian apt-get install -y plymouth
-          sudo chroot debian tasksel install ${{ matrix.desktop }}-desktop
+          sudo cp scripts/install-de.sh debian
+          sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
+          sudo rm debian/install-de.sh
         if: matrix.project == 'preinstalled-desktop'
 
       - name: switch to graphical boot
-        run: sudo chroot debian systemctl set-default graphical.target
+        run: |
+          sudo cp scripts/install-de.sh debian
+          sudo chroot debian ./switch-target.sh graphical
+          sudo rm debian/switch-target.sh
         if:  matrix.project == 'preinstalled-desktop'   
          
-      - name: unmount system directories
-        run: |
-          sudo umount -lf debian/proc
-          sudo umount -lf debian/sys
-          sudo umount -lf debian/dev
-          sudo umount -lf debian/run
+      - name: cleanup script
+        run: scripts/cleanup.sh $(pwd)
 
       - name: tarball installation directory
         run: |

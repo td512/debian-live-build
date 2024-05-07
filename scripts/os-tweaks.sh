@@ -2,7 +2,9 @@
 
 set -ex
 
-. /root/config/chroot
+# update packages
+apt-get update
+apt-get upgrade -y
 
 # Disable terminal ads
 pro config set apt_news=false
@@ -35,7 +37,7 @@ EOF
 # Default kernel command line arguments
 echo -n "rootwait rw console=ttyS2,1500000 console=tty1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory" > /etc/kernel/cmdline
 
-if [ "$SUBPROJECT" == "desktop-preinstalled" ]; then
+if [ "$1" == "desktop-preinstalled" ]; then
     # The cloud-init will not allow for user groups to be assigned on the first login
     apt-get -y purge cloud-init
 
