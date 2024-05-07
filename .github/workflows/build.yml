@@ -44,9 +44,14 @@ jobs:
           sudo mkdir debian
           sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
           echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
+          sudo mount --make-rslave --rbind /proc debian/proc
+          sudo mount --make-rslave --rbind /sys debian/sys
+          sudo mount --make-rslave --rbind /dev debian/dev
+          sudo mount --make-rslave --rbind /run debian/run
+          sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
+          sudo chroot debian /debootstrap/debootstrap --second-stage
           sudo cat <<EOF > debian/stage2.sh
           #!/bin/bash
-          /debootstrap/debootstrap --second-stage
           cat <<EOT > /etc/apt/sources.list
           deb http://deb.debian.org/debian/ bullseye main contrib non-free
           deb-src http://deb.debian.org/debian/ bullseye main contrib non-free
@@ -77,11 +82,6 @@ jobs:
           EOT
           EOF
           sudo chmod 755 debian/stage2.sh
-          sudo mount --make-rslave --rbind /proc debian/proc
-          sudo mount --make-rslave --rbind /sys debian/sys
-          sudo mount --make-rslave --rbind /dev debian/dev
-          sudo mount --make-rslave --rbind /run debian/run
-          sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
           sudo chroot debian ./stage2.sh
           rm debian/stage2.sh
           sudo umount debian/proc
