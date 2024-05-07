@@ -34,26 +34,57 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          sudo apt-get update && sudo apt-get upgrade -y
-          sudo apt-get install -y build-essential gcc-aarch64-linux-gnu bison \
-          qemu-user-static qemu-system-arm qemu-efi u-boot-tools binfmt-support \
-          debootstrap flex libssl-dev bc rsync kmod cpio xz-utils fakeroot parted \
-          udev dosfstools uuid-runtime git-lfs device-tree-compiler python2 python3 \
-          python-is-python3 fdisk bc debhelper python3-pyelftools python3-setuptools \
-          python3-distutils python3-pkg-resources swig libfdt-dev libpython3-dev dctrl-tools \
-          live-build livecd-rootfs
-
-      - name: Build Docker 
-        shell: bash
-        run: docker build -t livecd-rootfs docker
+          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz unxz -y
+          sudo docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Build
         shell: bash
-        run: docker run --privileged -v /dev:/dev --rm -v "$(pwd)":/opt livecd-rootfs bash ./build.sh ${{ matrix.project == 'preinstalled-desktop' && '--desktop' || matrix.project == 'preinstalled-server' && '--server' }} ${{ matrix.suite == 'jammy' && '--jammy' || matrix.suite == 'noble' && '--noble' }}
-        
+        run: |
+          mkdir /build && cd /build
+          mkdir rootfs
+          debootstrap --arch=arm64 --foreign debian
+          echo "nameserver 8.8.8.8" > debian/etc/resolv.conf
+          cat <<EOF > debian/stage2.sh
+          #!/bin/bash
+          /debootstrap/debootstrap --second-stage
+          cat <<EOT > /etc/apt/sources.list
+          deb http://deb.debian.org/debian/ bullseye main contrib non-free
+          deb-src http://deb.debian.org/debian/ bullseye main contrib non-free
+          deb http://deb.debian.org/debian/ bullseye-updates main contrib non-free
+          deb-src http://deb.debian.org/debian/ bullseye-updates main contrib non-free
+          deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+          deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free
+          deb http://deb.debian.org/debian/ bullseye-backports main contrib non-free
+          deb-src http://deb.debian.org/debian/ bullseye-backports main contrib non-free
+          EOT
+          apt-get update
+          apt-get install locales dialog tzdata -y
+          echo "Etc/GMT" > /etc/timezone
+          sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
+          echo 'LANG="en_US.UTF-8"'>/etc/default/locale
+          dpkg-reconfigure --frontend=noninteractive locales && \
+          update-locale LANG=en_US.UTF-8
+          ENV LANG en_US.UTF-8
+          ENV LANGUAGE en_US.UTF-8
+          ENV LC_ALL en_US.UTF-8
+          useradd -m -s /bin/bash debian
+          usermod -aG sudo debian
+          echo 'debian:debian'|chpasswd
+          apt-get install vim openssh-server ntpdate sudo ifupdown net-tools udev iputils-ping wget dosfstools unzip binutils libatomic1 -y
+          cat <<EOT > /etc/network/interfaces
+          allow-hotplug eth0
+          iface eth0 inet dhcp
+          EOT
+          EOF
+          chmod 755 debian/stage2.sh
+          chroot debian ./stage2.sh
+          rm debian/stage2.sh
+          cd debian && tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
+          cd ..
+          xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
         with:
-          name: ubuntu-${{ matrix.suite == 'jammy' && '22.04' || matrix.suite == 'noble' && '24.04' }}-${{ matrix.project }}-arm64-rootfs
-          path: ./build/ubuntu-${{ matrix.suite == 'jammy' && '22.04' || matrix.suite == 'noble' && '24.04' }}-${{ matrix.project }}-arm64.rootfs.tar.xz
+          name: debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs
+          path: ./build/debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64.rootfs.tar.xz
           if-no-files-found: error
