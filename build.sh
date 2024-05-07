@@ -26,13 +26,13 @@ while [ "$#" -gt 0 ]; do
             name="desktop"
             shift
             ;;
-        -j|--jammy)
-            export SUITE=jammy
+        -b|--bookworm)
+            export SUITE=bookworm
             version="22.04"
             shift
             ;;
-        -n|--noble)
-            export SUITE=noble
+        -t|--trixie)
+            export SUITE=trixie
             version="24.04"
             shift
             ;;
@@ -94,10 +94,10 @@ sed -i 's/libgl1-amber-dri//g' config/package-lists/livecd-rootfs.list.chroot_in
     echo "linux-firmware"
 ) > config/package-lists/my.list.chroot
 
-if [ "${PROJECT}" == "ubuntu" ]; then
+if [ "${PROJECT}" == "debian" ]; then
     # Specific packages to install for debian desktop
     (
-        echo "ubuntu-desktop-rockchip"
+        echo "debian-desktop-rockchip"
         echo "oem-config-gtk"
         echo "ubiquity-frontend-gtk"
         echo "ubiquity-slideshow-ubuntu"
