@@ -150,11 +150,13 @@ jobs:
         run: |
           cd debian
           sudo tar cvf ../${{ env.filename }}.tar .
+          ls -lah
           cd ..
 
       - name: compress installation tarball
         run: |
           sudo xz -9 ${{ env.filename }}.tar
+          ls -lah
           sudo chmod 777 *.xz
           
       - name: Upload
