@@ -60,8 +60,8 @@ lb config \
 	--architecture arm64 \
 	--bootstrap-qemu-arch arm64 \
 	--bootstrap-qemu-static /usr/bin/qemu-aarch64-static \
-	--archive-areas "main restricted universe multiverse" \
-	--parent-archive-areas "main restricted universe multiverse" \
+	--archive-areas "main non-free non-free-firmware contrib" \
+	--parent-archive-areas "main non-free non-free-firmware contrib" \
     --mirror-bootstrap "http://deb.debian.org" \
     --parent-mirror-bootstrap "http://deb.debian.org" \
     --mirror-chroot-security "http://deb.debian.org" \
