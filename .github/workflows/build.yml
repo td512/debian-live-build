@@ -34,6 +34,10 @@ jobs:
         run: exit 1
         if: matrix.project == 'preinstalled-server' && matrix.desktop != 'none'
 
+      - name: early exit (desktop workflow)
+        run: exit 1
+        if: matrix.project == 'preinstalled-desktop' && matrix.desktop == 'none'
+
       - name: prepare filename (desktop)
         run: |
           echo "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.desktop }}-${{ matrix.project }}-arm64-rootfs">>$GITHUB_ENV
