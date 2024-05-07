@@ -40,11 +40,11 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          mkdir /build && cd /build
-          mkdir rootfs
-          debootstrap ${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
-          echo "nameserver 8.8.8.8" > debian/etc/resolv.conf
-          cat <<EOF > debian/stage2.sh
+          sudo mkdir /build && cd /build
+          sudo mkdir debian
+          sudo debootstrap ${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
+          echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
+          sudo cat <<EOF > debian/stage2.sh
           #!/bin/bash
           /debootstrap/debootstrap --second-stage
           cat <<EOT > /etc/apt/sources.list
@@ -76,12 +76,13 @@ jobs:
           iface eth0 inet dhcp
           EOT
           EOF
-          chmod 755 debian/stage2.sh
-          chroot debian ./stage2.sh
+          sudo chmod 755 debian/stage2.sh
+          sudo chroot debian ./stage2.sh
           rm debian/stage2.sh
-          cd debian && tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
+          cd debian && sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar .
           cd ..
-          xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar
+          sudo xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs.tar
+          sudo chmod 777 *.xz
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
         with:
