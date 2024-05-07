@@ -140,10 +140,10 @@ jobs:
          
       - name: unmount system directories
         run: |
-          sudo umount debian/proc
-          sudo umount debian/sys
-          sudo umount debian/dev
-          sudo umount debian/run
+          sudo umount -lf debian/proc
+          sudo umount -lf debian/sys
+          sudo umount -lf debian/dev
+          sudo umount -lf debian/run
 
       - name: tarball installation directory
         run: |
