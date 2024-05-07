@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz unxz -y
+          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
           sudo docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Build
