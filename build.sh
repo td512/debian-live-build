@@ -70,7 +70,7 @@ lb config \
     --parent-mirror-binary-security "http://deb.debian.org" \
     --mirror-binary "http://deb.debian.org" \
     --parent-mirror-binary "http://deb.debian.org" \
-    --keyring-packages ubuntu-keyring \
+    --keyring-packages debian-keyring \
     --linux-flavours rockchip
 
 # Add chroot tweaks and archives
