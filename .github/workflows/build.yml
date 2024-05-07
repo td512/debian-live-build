@@ -34,14 +34,14 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
-          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
+          sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install qemu-user-static debootstrap qemu-utils qemu-efi-aarch64 qemu-system-arm xz-utils -y
           sudo docker run --privileged --rm tonistiigi/binfmt --install all
 
       - name: Build
         shell: bash
         run: |
           sudo mkdir debian
-          sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 debian http://deb.debian.org/debian/
+          sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
           echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
           sudo cat <<EOF > debian/stage2.sh
           #!/bin/bash
@@ -80,6 +80,7 @@ jobs:
           sudo mount --make-rslave --rbind /sys debian/sys
           sudo mount --make-rslave --rbind /dev debian/dev
           sudo mount --make-rslave --rbind /run debian/run
+          sudo cp "$(which qemu-aarch64-static)" debian/usr/bin
           sudo chroot debian ./stage2.sh
           rm debian/stage2.sh
           sudo umount debian/proc
