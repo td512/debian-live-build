@@ -30,9 +30,19 @@ jobs:
           - lxqt
           - none
     steps:
-      - name: early exit (matrix)
+      - name: early exit (server workflow)
         run: exit 1
-        if: matrix.project != 'preinstalled-server' && matrix.desktop != 'none'
+        if: matrix.project == 'preinstalled-server' && matrix.desktop != 'none'
+
+      - name: prepare filename (desktop)
+        run: |
+          "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-${{ matrix.desktop }}-arm64-rootfs">>$GITHUB_ENV
+        if: matrix.project == 'preinstalled-desktop'
+        
+      - name: prepare filename (server)
+        run: |
+          "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs">>$GITHUB_ENV
+        if: matrix.project == 'preinstalled-server'
         
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
@@ -136,17 +146,17 @@ jobs:
       - name: tarball installation directory
         run: |
           cd debian
-          sudo tar cvf ../debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}${{ matrix.desktop != 'none' && '-'+matrix.desktop }}-arm64-rootfs.tar .
+          sudo tar cvf ../${{ env.filename }}.tar .
           cd ..
 
       - name: compress installation tarball
         run: |
-          sudo xz -9 debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}${{ matrix.desktop != 'none' && '-'+matrix.desktop }}-arm64-rootfs.tar
+          sudo xz -9 ${{ env.filename }}.tar
           sudo chmod 777 *.xz
           
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
         with:
-          name: debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs
-          path: ./build/debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64.rootfs.tar.xz
+          name: env.filename
+          path: ./build/${{ env.filename }}.tar.xz
           if-no-files-found: error
