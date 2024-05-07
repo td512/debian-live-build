@@ -15,8 +15,8 @@ jobs:
           - preinstalled-desktop
           - preinstalled-server
         suite:
-          - jammy
-          - noble
+          - bookworm
+          - trixie
     steps:
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir /build && cd /build
           mkdir rootfs
-          debootstrap --arch=arm64 --foreign debian
+          debootstrap ${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
           echo "nameserver 8.8.8.8" > debian/etc/resolv.conf
           cat <<EOF > debian/stage2.sh
           #!/bin/bash
