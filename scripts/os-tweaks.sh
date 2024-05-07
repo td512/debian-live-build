@@ -6,9 +6,6 @@ set -ex
 apt-get update
 apt-get upgrade -y
 
-# Disable apport bug reporting
-sed -i 's/enabled=1/enabled=0/g' /etc/default/apport
-
 # Let systemd create machine id on first boot
 rm -f /var/lib/dbus/machine-id
 true > /etc/machine-id 
