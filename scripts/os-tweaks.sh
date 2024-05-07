@@ -6,9 +6,6 @@ set -ex
 apt-get update
 apt-get upgrade -y
 
-# Disable terminal ads
-pro config set apt_news=false
-
 # Disable apport bug reporting
 sed -i 's/enabled=1/enabled=0/g' /etc/default/apport
 
