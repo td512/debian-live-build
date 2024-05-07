@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           sudo mkdir debian
-          sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/
+          sudo debootstrap ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }} --arch=arm64 --foreign debian http://deb.debian.org/debian/ /usr/share/debootstrap/scripts/${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
           echo "nameserver 8.8.8.8" | sudo tee debian/etc/resolv.conf
           sudo cat <<EOF > debian/stage2.sh
           #!/bin/bash
