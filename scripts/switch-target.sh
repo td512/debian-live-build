@@ -1,3 +1,5 @@
 #!/bin/bash
 
-systemctl set-default $1.target
+pushd $1
+chroot debian systemctl set-default $2.target
+popd
