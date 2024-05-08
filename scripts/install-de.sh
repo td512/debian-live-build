@@ -1,4 +1,5 @@
 #!/bin/bash
 
 apt-get install -y plymouth
-tasksel install "$2-desktop"
+DESKTOP=$(echo "$2-desktop" | tr -d " \t\n\r") 
+tasksel install $DESKTOP --new-install
