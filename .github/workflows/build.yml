@@ -90,7 +90,6 @@ jobs:
       - name: install desktop environment
         run: |
           sudo cp scripts/install-de.sh debian
-          echo ${{ matrix.desktop }}
           sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
         if: matrix.project == 'preinstalled-desktop'
@@ -108,12 +107,12 @@ jobs:
       - name: tarball installation directory
         run: |
           cd debian
-          sudo tar cvf ../${{ env.filename }}.tar .
+          sudo tar -p -c --sort=name --xattrs ../${{ env.filename }}.tar .
           cd ..
 
       - name: compress installation tarball
         run: |
-          sudo xz -9 ${{ env.filename }}.tar
+          sudo xz -9 -T0 ${{ env.filename }}.tar
           sudo chmod 777 *.xz
           
       - name: Upload
