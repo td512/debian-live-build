@@ -90,7 +90,7 @@ jobs:
       - name: install desktop environment
         run: |
           sudo cp scripts/install-de.sh debian
-          sudo chroot debian ./install-de.sh $(pwd) ${{ matrix.desktop }}
+          sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
         if: matrix.project == 'preinstalled-desktop'
 
