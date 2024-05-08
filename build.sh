@@ -51,9 +51,9 @@ done
 # export EXTRA_PPAS="jjriek/rockchip jjriek/rockchip-multimedia"
 
 if [[ "$name" == "server" ]]; then
-    $DESTNAME="debian-${version}-preinstalled-${name}-arm64.rootfs.tar.xz"
+    $DESTNAME="debian-${version}-preinstalled-${name}-arm64.rootfs"
 else
-    $DESTNAME="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs.tar.xz"
+    $DESTNAME="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs"
 fi
 
 scripts/install-dependencies.sh
@@ -77,4 +77,6 @@ fi
 scripts/cleanup.sh $(pwd)
 
 # Tar the entire rootfs
-(cd debian/ &&  tar -p -c --sort=name --xattrs ./*) | xz -9 -T0 > $DESTNAME
+cd debian/ &&  tar -p -cf "${DESTNAME}.tar" --sort=name --xattrs ./*
+xz -9 -e -T0 $DESTNAME.tar
+
