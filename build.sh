@@ -23,7 +23,7 @@ while [ "$#" -gt 0 ]; do
             export SUITE=bookworm
             shift
             ;;
-        -de|--desktop-environment)
+        -de|--desktopenvironment)
             export DESKTOP="${2}"
             shift 2
             ;;
