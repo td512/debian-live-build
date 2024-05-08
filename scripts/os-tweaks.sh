@@ -5,6 +5,7 @@ set -ex
 # update packages
 apt-get update
 apt-get upgrade -y
+apt-get install -y u-boot-menu 
 
 # Let systemd create machine id on first boot
 rm -f /var/lib/dbus/machine-id
