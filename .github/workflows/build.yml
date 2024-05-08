@@ -85,7 +85,7 @@ jobs:
         run: |
           sudo cp scripts/post-debootstrap.sh debian
           sudo chroot debian ./post-debootstrap.sh ${{ matrix.suite }}
-          sudo rm debian/ipost-debootstrap.sh
+          sudo rm debian/post-debootstrap.sh
 
       - name: install desktop environment
         run: |
