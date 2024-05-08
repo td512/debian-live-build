@@ -21,11 +21,12 @@ while [ "$#" -gt 0 ]; do
             ;;
         -b|--bookworm)
             export SUITE=bookworm
+            export version=12
+
             shift
             ;;
         -de|--desktopenvironment)
             export DESKTOP="${2}"
-            export version=12
             shift 2
             ;;
         -t|--trixie)
