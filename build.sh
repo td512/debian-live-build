@@ -64,7 +64,7 @@ sudo rm debian/os-tweaks.sh
 sudo cp scripts/post-debootstrap.sh debian
 sudo chroot debian ./post-debootstrap.sh $SUITE
 sudo rm debian/post-debootstrap.sh
-if [[ "$name" == "desktop"]]; then
+if [[ "$name" == "desktop" ]]; then
     sudo cp scripts/install-de.sh debian
     sudo chroot debian ./install-de.sh $DESKTOP
     sudo rm debian/install-de.sh
