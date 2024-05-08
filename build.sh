@@ -25,10 +25,12 @@ while [ "$#" -gt 0 ]; do
             ;;
         -de|--desktopenvironment)
             export DESKTOP="${2}"
+            export version=12
             shift 2
             ;;
         -t|--trixie)
             export SUITE=trixie
+            export version=13
             shift
             ;;
         -v|--verbose)
@@ -49,9 +51,9 @@ done
 # export EXTRA_PPAS="jjriek/rockchip jjriek/rockchip-multimedia"
 
 if [[ "$name" == "server" ]]; then
-    $filename="debian-${version}-preinstalled-${name}-arm64.rootfs.tar.xz"
+    $DESTNAME="debian-${version}-preinstalled-${name}-arm64.rootfs.tar.xz"
 else
-    $filename="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs.tar.xz"
+    $DESTNAME="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs.tar.xz"
 fi
 
 scripts/install-dependencies.sh
@@ -75,4 +77,4 @@ fi
 scripts/cleanup.sh $(pwd)
 
 # Tar the entire rootfs
-(cd DEBIAN/ &&  tar -p -c --sort=name --xattrs ./*) | xz -9 -T0 > $filename
+(cd debian/ &&  tar -p -c --sort=name --xattrs ./*) | xz -9 -T0 > $DESTNAME
