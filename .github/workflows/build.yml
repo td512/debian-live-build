@@ -90,13 +90,13 @@ jobs:
       - name: install desktop environment
         run: |
           sudo cp scripts/install-de.sh debian
-          sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
+          sudo chroot debian ./install-de.sh $(pwd) ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
         if: matrix.project == 'preinstalled-desktop'
 
       - name: switch to graphical boot
         run: |
-          sudo cp scripts/install-de.sh debian
+          sudo cp scripts/switch-target.sh debian
           sudo chroot debian ./switch-target.sh graphical
           sudo rm debian/switch-target.sh
         if:  matrix.project == 'preinstalled-desktop'   
