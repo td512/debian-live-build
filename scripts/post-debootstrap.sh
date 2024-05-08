@@ -11,7 +11,7 @@ deb http://deb.debian.org/debian/ $1-backports main contrib non-free
 deb-src http://deb.debian.org/debian/ $1-backports main contrib non-free
 EOT
 apt-get update
-apt-get install locales dialog tzdata -y
+apt-get install locales dialog tzdata u-boot-menu -y
 echo "Etc/GMT" > /etc/timezone
 sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen
 echo 'LANG="en_US.UTF-8"'>/etc/default/locale
