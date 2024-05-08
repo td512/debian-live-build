@@ -1,4 +1,4 @@
 #!/bin/bash
 
 apt-get install -y plymouth
-apt-get install -y task-$2-desktop
+tasksel install $1-desktop --new-install
