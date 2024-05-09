@@ -82,4 +82,4 @@ cd ..
 xz -9 -e -T0 $DESTNAME.tar
 ls
 pwd
-mv $DESTNAME.tar.xz ..
+mv "${DESTNAME}.tar.xz" ..
