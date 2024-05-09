@@ -26,17 +26,6 @@ jobs:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
 
-      - name: Get more disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-        if: steps.cache.outputs.cache-hit != 'true'
-
       - name: Install dependencies
         shell: bash
         run: scripts/install-dependencies.sh
@@ -115,17 +104,6 @@ jobs:
           path: ./desktop.tar
           key: os-cache-${{ matrix.suite }}-${{ matrix.desktop }}
 
-      - name: Get more disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-        if: steps.cache.outputs.cache-hit != 'true'
-
       - name: Install dependencies
         shell: bash
         run: scripts/install-dependencies.sh
@@ -199,16 +177,6 @@ jobs:
         
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Get more disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
 
       - name: Install dependencies
         shell: bash
