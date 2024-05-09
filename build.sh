@@ -51,9 +51,9 @@ done
 # export EXTRA_PPAS="jjriek/rockchip jjriek/rockchip-multimedia"
 
 if [[ "$name" == "server" ]]; then
-    $DESTNAME="debian-${version}-preinstalled-${name}-arm64.rootfs"
+    export $DESTNAME="debian-${version}-preinstalled-${name}-arm64.rootfs"
 else
-    $DESTNAME="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs"
+    export $DESTNAME="debian-${version}-${DESKTOP}-preinstalled-${name}-arm64.rootfs"
 fi
 
 scripts/install-dependencies.sh
