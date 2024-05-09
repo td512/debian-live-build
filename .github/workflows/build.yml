@@ -190,7 +190,7 @@ jobs:
       - name: tarball installation directory
         run: |
           cd debian
-          sudo tar -p -c --sort=name --xattrs ../${{ env.filename }}.tar .
+          sudo tar -p -cf ../${{ env.filename }}.tar --sort=name --xattrs  .
           cd ..
 
       - name: compress installation tarball
