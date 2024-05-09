@@ -7,7 +7,7 @@ on:
       - 'main'
 
 jobs:
-  cache:
+  cache-os:
     runs-on: ubuntu-latest
     name: Build OS Cache
     strategy:
@@ -75,10 +75,86 @@ jobs:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
         if: steps.cache.outputs.cache-hit != 'true'
+  cache-desktop:
+    runs-on: ubuntu-latest
+    needs: [cache-os]
+    name: Build Desktop Cache
+    strategy:
+      matrix:
+        suite:
+          - bookworm
+          - trixie
+        desktop:
+          - gnome
+          - gnome-flashback
+          - kde
+          - xfce
+          - lxde
+          - mate
+          - cinnamon
+          - lxqt
+          - none
+    steps:        
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Restore OS Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./os.tar
+          key: os-cache-${{ matrix.suite }}
+
+      - name: Restore Desktop Cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./desktop.tar
+          key: os-cache-${{ matrix.suite }}-${{ matrix.desktop }}
+
+      - name: Get more disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Install dependencies
+        shell: bash
+        run: scripts/install-dependencies.sh
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: setup chroot
+        run: scripts/setup-chroot.sh $(pwd)
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: install desktop environment
+        run: |
+          sudo cp scripts/install-de.sh debian
+          sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
+          sudo rm debian/install-de.sh
+        if: matrix.project == 'preinstalled-desktop' && matrix.desktop != 'none'
+
+      - name: cleanup script
+        run: scripts/cleanup.sh $(pwd)
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: tarball installation directory
+        run: sudo tar -p -cf desktop.tar --sort=name --xattrs debian
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - uses: actions/cache@v4
+        with:
+          path: ./desktop.tar
+          key: os-cache-${{ matrix.suite }}-${{ matrix.desktop }}
+        if: steps.cache.outputs.cache-hit != 'true'
   kernel:
     runs-on: ubuntu-latest
     continue-on-error: true
-    needs: [cache]
+    needs: [cache-desktop]
     name: Build
     strategy:
       matrix:
@@ -139,7 +215,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ./os.tar
-          key: os-cache-${{ matrix.suite }}
+          key: os-cache-${{ matrix.suite }}-${{ matrix.desktop }}
 
       - name: Extract OS Cache
         shell: bash
@@ -176,7 +252,13 @@ jobs:
           sudo cp scripts/install-de.sh debian
           sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
-        if: matrix.project == 'preinstalled-desktop'
+        if: matrix.project == 'preinstalled-desktop' && steps.cache.outputs.cache-hit != 'true'
+
+      - name: update os
+        run: |
+          sudo chroot debian apt-get update
+          sudo chroot debian apt-get upgrade -y
+          sudo chroot debian apt-get full-upgrade -y
 
       - name: switch to graphical boot
         run: |
