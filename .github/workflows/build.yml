@@ -136,7 +136,7 @@ jobs:
 
       - name: Extract OS Cache
         shell: bash
-        run: tar xf os.tar
+        run: sudo tar xf os.tar
         if: steps.cache.outputs.cache-hit == 'true'
 
       - name: debootstrap
