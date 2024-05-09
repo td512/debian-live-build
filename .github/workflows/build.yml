@@ -104,6 +104,11 @@ jobs:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
 
+      - name: Extract OS Cache
+        shell: bash
+        run: sudo tar xf os.tar
+        if: steps.cache.outputs.cache-hit == 'true'
+
       - name: Restore Desktop Cache
         id: cache
         uses: actions/cache/restore@v4
