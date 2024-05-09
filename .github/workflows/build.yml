@@ -181,7 +181,7 @@ jobs:
 
       - name: compress installation tarball
         run: |
-          sudo xz -9 -T0 ${{ env.filename }}.tar
+          sudo xz -0 -T0 ${{ env.filename }}.tar
           sudo chmod 777 *.xz
           
       - name: Upload
