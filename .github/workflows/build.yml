@@ -7,6 +7,49 @@ on:
       - 'main'
 
 jobs:
+  cache:
+    runs-on: ubuntu-latest
+    name: Build OS Cache
+    steps:        
+      - name: Get more disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: scripts/install-dependencies.sh
+
+      - name: debootstrap
+        shell: bash
+        run: scripts/debootstrap.sh $(pwd) ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
+
+      - name: setup chroot
+        run: scripts/setup-chroot.sh $(pwd)
+
+      - name: debootstrap stage 2
+        run: scripts/complete-debootstrap.sh $(pwd)
+
+      - name: cleanup script
+        run: scripts/cleanup.sh $(pwd)
+
+      - name: tarball installation directory
+        run: |
+          sudo tar -p -c --sort=name --xattrs os.tar debian
+
+      - uses: actions/cache@v4
+        with:
+          path: ./os.tar
+          key: os-cache
+      
   kernel:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -65,15 +108,28 @@ jobs:
         shell: bash
         run: scripts/install-dependencies.sh
 
+      - name: Restore OS Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./os.tar
+          key: os-cache
+
+      - name: Extract OS Cache
+        shell: bash
+        run: tar xf os.tar
+        if: steps.cache.outputs.cache-hit == 'true'
+
       - name: debootstrap
         shell: bash
         run: scripts/debootstrap.sh $(pwd) ${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: setup chroot
         run: scripts/setup-chroot.sh $(pwd)
 
       - name: debootstrap stage 2
         run: scripts/complete-debootstrap.sh $(pwd)
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: tweak os
         run: |
