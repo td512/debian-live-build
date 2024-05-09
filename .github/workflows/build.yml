@@ -8,7 +8,7 @@ on:
 
 jobs:
   cache-os:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-2vcpu-ubuntu-2204-arm
     name: Build OS Cache
     strategy:
       matrix:
@@ -21,7 +21,7 @@ jobs:
       
       - name: Restore OS Cache
         id: cache
-        uses: actions/cache/restore@v4
+        uses: buildjet/cache/restore@v4
         with:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
@@ -59,13 +59,13 @@ jobs:
         run: sudo tar -p -cf os.tar --sort=name --xattrs debian
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - uses: actions/cache@v4
+      - uses: buildjet/cache@v4
         with:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
         if: steps.cache.outputs.cache-hit != 'true'
   kernel:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-2vcpu-ubuntu-2204-arm
     continue-on-error: true
     needs: [cache-os]
     name: Build
@@ -115,7 +115,7 @@ jobs:
 
       - name: Restore OS Cache
         id: cache
-        uses: actions/cache/restore@v4
+        uses: buildjet/cache/restore@v4
         with:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
