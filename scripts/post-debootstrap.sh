@@ -23,6 +23,7 @@ env LC_ALL en_US.UTF-8
 useradd -m -s /bin/bash debian
 usermod -aG sudo debian
 echo 'debian:debian'|chpasswd
+tasksel install ssh-server --new-install
 apt-get install vim openssh-server ntpdate sudo ifupdown net-tools udev iputils-ping wget dosfstools unzip binutils libatomic1 -y
 systemctl enable ssh
 cat <<EOT > /etc/network/interfaces

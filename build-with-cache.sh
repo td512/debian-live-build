@@ -61,9 +61,6 @@ scripts/setup-chroot.sh $(pwd)
 sudo cp scripts/os-tweaks.sh debian
 sudo chroot debian ./os-tweaks.sh "preinstalled-${name}"
 sudo rm debian/os-tweaks.sh
-sudo cp scripts/post-debootstrap.sh debian
-sudo chroot debian ./post-debootstrap.sh $SUITE
-sudo rm debian/post-debootstrap.sh
 if [[ "$name" == "desktop" ]]; then
     sudo cp scripts/install-de.sh debian
     sudo chroot debian ./install-de.sh $DESKTOP
