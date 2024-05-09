@@ -81,4 +81,5 @@ cd debian/ &&  tar -p -cf "../${DESTNAME}.tar" --sort=name --xattrs ./*
 cd ..
 xz -9 -e -T0 $DESTNAME.tar
 ls
+pwd
 mv $DESTNAME.tar.xz ..
