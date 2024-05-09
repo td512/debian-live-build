@@ -169,6 +169,7 @@ jobs:
           sudo cp scripts/post-debootstrap.sh debian
           sudo chroot debian ./post-debootstrap.sh ${{ matrix.suite }}
           sudo rm debian/post-debootstrap.sh
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: install desktop environment
         run: |
