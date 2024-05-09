@@ -80,6 +80,4 @@ scripts/cleanup.sh $(pwd)
 cd debian/ && sudo tar -p -cf "../${DESTNAME}.tar" --sort=name --xattrs ./*
 cd ..
 sudo xz -9 -e -T0 $DESTNAME.tar
-ls -lah
-pwd
 sudo mv "${DESTNAME}.tar.xz" ..
