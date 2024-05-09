@@ -140,7 +140,7 @@ jobs:
           sudo cp scripts/install-de.sh debian
           sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
-        if: matrix.project == 'preinstalled-desktop' && matrix.desktop != 'none'
+        if: matrix.desktop != 'none'
 
       - name: cleanup script
         run: scripts/cleanup.sh $(pwd)
