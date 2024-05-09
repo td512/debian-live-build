@@ -78,5 +78,7 @@ scripts/cleanup.sh $(pwd)
 
 # Tar the entire rootfs
 cd debian/ &&  tar -p -cf "${DESTNAME}.tar" --sort=name --xattrs ./*
-xz -9 -e -T0 $DESTNAME.tar
+xz -9 -e -T0 ../$DESTNAME.tar
+cd ..
+ls
 mv $DESTNAME.tar.xz ..
