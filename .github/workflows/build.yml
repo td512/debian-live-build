@@ -16,6 +16,15 @@ jobs:
             - bookworm
             - trixie
     steps:        
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Restore OS Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ./os.tar
+          key: os-cache-${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
+
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -25,15 +34,7 @@ jobs:
           haskell: true
           large-packages: true
           swap-storage: true
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Restore OS Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ./os.tar
-          key: os-cache-${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
+        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Install dependencies
         shell: bash
@@ -66,7 +67,6 @@ jobs:
           path: ./os.tar
           key: os-cache-${{ matrix.suite == 'bookworm' && 'bookworm' || matrix.suite == 'trixie' && 'trixie' }}
         if: steps.cache.outputs.cache-hit != 'true'
-      
   kernel:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -109,6 +109,10 @@ jobs:
           echo "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs">>$GITHUB_ENV
         if: matrix.project == 'preinstalled-server'
         
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Get more disk space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -118,9 +122,6 @@ jobs:
           haskell: true
           large-packages: true
           swap-storage: true
-
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Install dependencies
         shell: bash
