@@ -101,21 +101,21 @@ jobs:
       - name: prepare filename (desktop)
         run: |
           echo "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.desktop }}-${{ matrix.project }}-arm64-rootfs">>$GITHUB_ENV
-        if: matrix.project == 'preinstalled-desktop' && env.fail-gracefully != true
+        if: matrix.project == 'preinstalled-desktop' && env.fail-gracefully != 'true'
         
       - name: prepare filename (server)
         run: |
           echo "filename=debian-${{ matrix.suite == 'bookworm' && '12' || matrix.suite == 'trixie' && '13' }}-${{ matrix.project }}-arm64-rootfs">>$GITHUB_ENV
-        if: matrix.project == 'preinstalled-server' && env.fail-gracefully != true
+        if: matrix.project == 'preinstalled-server' && env.fail-gracefully != 'true'
         
       - name: Checkout code
         uses: actions/checkout@v4
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: Install dependencies
         shell: bash
         run: scripts/install-dependencies.sh
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: Restore OS Cache
         id: cache
@@ -123,17 +123,17 @@ jobs:
         with:
           path: ./os.tar
           key: os-cache-${{ matrix.suite }}
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: Extract OS Cache
         shell: bash
         run: sudo tar xf os.tar
-        if: steps.cache.outputs.cache-hit == 'true' && env.fail-gracefully != true
+        if: steps.cache.outputs.cache-hit == 'true' && env.fail-gracefully != 'true'
 
       - name: debootstrap
         shell: bash
         run: scripts/debootstrap.sh $(pwd) ${{ matrix.suite }}
-        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != true
+        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != 'true'
 
       - name: setup chroot
         run: scripts/setup-chroot.sh $(pwd)
@@ -141,59 +141,59 @@ jobs:
 
       - name: debootstrap stage 2
         run: scripts/complete-debootstrap.sh $(pwd)
-        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != true
+        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != 'true'
 
       - name: tweak os
         run: |
           sudo cp scripts/os-tweaks.sh debian
           sudo chroot debian ./os-tweaks.sh ${{ matrix.project }}
           sudo rm debian/os-tweaks.sh
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: post debootstrap setup
         run: |
           sudo cp scripts/post-debootstrap.sh debian
           sudo chroot debian ./post-debootstrap.sh ${{ matrix.suite }}
           sudo rm debian/post-debootstrap.sh
-        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != true
+        if: steps.cache.outputs.cache-hit != 'true' && env.fail-gracefully != 'true'
 
       - name: install desktop environment
         run: |
           sudo cp scripts/install-de.sh debian
           sudo chroot debian ./install-de.sh ${{ matrix.desktop }}
           sudo rm debian/install-de.sh
-        if: matrix.project == 'preinstalled-desktop' && env.fail-gracefully != true
+        if: matrix.project == 'preinstalled-desktop' && env.fail-gracefully != 'true'
 
       - name: update os
         run: |
           sudo chroot debian apt-get update
           sudo chroot debian apt-get upgrade -y
           sudo chroot debian apt-get full-upgrade -y
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: switch to graphical boot
         run: |
           sudo cp scripts/switch-target.sh debian
           sudo chroot debian ./switch-target.sh graphical
           sudo rm debian/switch-target.sh
-        if:  matrix.project == 'preinstalled-desktop' && env.fail-gracefully != true
+        if:  matrix.project == 'preinstalled-desktop' && env.fail-gracefully != 'true'
          
       - name: cleanup script
         run: scripts/cleanup.sh $(pwd)
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: tarball installation directory
         run: |
           cd debian
           sudo tar -p -cf ../${{ env.filename }}.tar --sort=name --xattrs  .
           cd ..
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: compress installation tarball
         run: |
           sudo xz -0 -T0 ${{ env.filename }}.tar
           sudo chmod 777 *.xz
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
           
       - name: Upload
         uses: actions/upload-artifact@v4.3.1
@@ -203,4 +203,4 @@ jobs:
           if-no-files-found: error
           overwrite: true
           compression-level: 9
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
