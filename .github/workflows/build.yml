@@ -137,7 +137,7 @@ jobs:
 
       - name: setup chroot
         run: scripts/setup-chroot.sh $(pwd)
-        if: env.fail-gracefully != true
+        if: env.fail-gracefully != 'true'
 
       - name: debootstrap stage 2
         run: scripts/complete-debootstrap.sh $(pwd)
