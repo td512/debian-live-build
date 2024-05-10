@@ -8,7 +8,7 @@ on:
 
 jobs:
   cache-os:
-    runs-on: runs-on,runner=4cpu-linux-arm64,image=ubuntu22-full-arm64,run-id=${{ github.run_id }}
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
     name: Build OS Cache
     strategy:
       matrix:
@@ -65,7 +65,7 @@ jobs:
           key: os-cache-${{ matrix.suite }}
         if: steps.cache.outputs.cache-hit != 'true'
   kernel:
-    runs-on: runs-on,runner=4cpu-linux-arm64,image=ubuntu22-full-arm64,run-id=${{ github.run_id }}
+    runs-on: buildjet-4vcpu-ubuntu-2204-arm
     continue-on-error: true
     needs: [cache-os]
     name: Build
